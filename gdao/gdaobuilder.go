@@ -261,8 +261,9 @@ func (t *` + structName + `) Select(columns ...gdao.Column) (_r *` + structName 
 	r = r + selectfunc
 
 	r = r + `
-func (t *` + structName + `) New() gdao.Scanner {
-	return New` + structName + `()
+func (t *` + structName + `) New0() {
+	_t := New` + structName + `()
+	*t = *_t
 }
 `
 
