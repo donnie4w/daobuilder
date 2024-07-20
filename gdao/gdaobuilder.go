@@ -75,22 +75,7 @@ func createDaoFile(dbtype, dbname, tableName, tableAlias string, packageName str
 	ua := util.ToUpperFirstLetter
 	structName := ua(tableAlias)
 
-	r := `// Copyright (c) 2024, donnie <donnie4w@gmail.com>
-// All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
-// github.com/donnie4w/gdao
-// datetime :` + datetime + `
-// gdao version ` + gdaoversion + `
-// ` + dbtype + `
-// database:` + dbname + ` ,tablename:` + tableName + `
-
-package ` + packageName + `
-
-import (
-	"fmt"
-	"github.com/donnie4w/gdao"
-	` + func() string {
+	timePackage := func() string {
 		b := false
 		for _, bean := range tableBean.Fieldlist {
 			if bean.FieldType == reflect.TypeOf(sql.NullTime{}) {
@@ -99,30 +84,49 @@ import (
 			}
 		}
 		if b {
-			return "\"time\""
+			return `"time"`
 		} else {
 			return ""
 		}
 	}()
-	r = r + `
+
+	r := `// Copyright (c) 2024, donnie <donnie4w@gmail.com>
+// All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+//
+// github.com/donnie4w/gdao
+//
+// datetime :` + datetime + `
+// gdao version ` + gdaoversion + `
+// dbtype:` + dbtype + ` ,database:` + dbname + ` ,tablename:` + tableName + `
+
+package ` + packageName + `
+
+import (
+	"fmt"
+	"github.com/donnie4w/gdao/base"
+	"github.com/donnie4w/gdao"
+	` + timePackage + `
 )`
 
 	for _, bean := range tableBean.Fieldlist {
+		log.Println(bean)
 		rtype := goPtrType(bean.FieldType)
 		structField := strings.ToLower(tableAlias) + "_" + ua(bean.FieldName)
 		s := `
-type ` + structField + ` struct {
-	gdao.Field
+type ` + structField + `[T any] struct {
+	base.Field[T]
 	fieldName  string
-	FieldValue ` + rtype + `
+	fieldValue ` + rtype + `
 }
 
-func (t *` + structField + `) Name() string {
+func (t *` + structField + `[T]) Name() string {
 	return t.fieldName
 }
 
-func (t *` + structField + `) Value() any {
-	return t.FieldValue
+func (t *` + structField + `[T]) Value() any {
+	return t.fieldValue
 }
 `
 		r = r + s
@@ -130,11 +134,11 @@ func (t *` + structField + `) Value() any {
 
 	r = r + `
 type ` + structName + ` struct {
-	gdao.Table
+	gdao.Table[` + structName + `]
 `
 	for _, bean := range tableBean.Fieldlist {
 		s := `
-	` + ua(bean.FieldName) + `		*` + strings.ToLower(tableAlias) + "_" + ua(bean.FieldName)
+	` + ua(bean.FieldName) + `		*` + strings.ToLower(tableAlias) + "_" + ua(bean.FieldName) + `[` + structName + `]`
 		r = r + s
 	}
 	r = r + `
@@ -154,13 +158,13 @@ type ` + structName + ` struct {
 		s := `
 func (u *` + structName + `) Get` + fieldName + `() (_r ` + rtype + `){
 `
-		s1 := `	if u.` + fieldName + `.FieldValue != nil {
-		_r = ` + mustptr(bean.FieldType, "*") + `u.` + fieldName + `.FieldValue
+		s1 := `	if u.` + fieldName + `.fieldValue != nil {
+		_r = ` + mustptr(bean.FieldType, "*") + `u.` + fieldName + `.fieldValue
 	}`
 		if mustPtr(bean.FieldType) {
 			s = s + s1
 		} else {
-			s = s + `	_r = ` + mustptr(bean.FieldType, "*") + `u.` + fieldName + `.FieldValue`
+			s = s + `	_r = ` + mustptr(bean.FieldType, "*") + `u.` + fieldName + `.fieldValue`
 		}
 		s = s + `
 	return
@@ -168,7 +172,7 @@ func (u *` + structName + `) Get` + fieldName + `() (_r ` + rtype + `){
 
 func (u *` + structName + `) Set` + fieldName + `(arg ` + rtype + `) *` + structName + `{
 	u.Put0(u.` + fieldName + `.fieldName, arg)
-	u.` + fieldName + `.FieldValue = ` + mustptr(bean.FieldType, "&") + `arg
+	u.` + fieldName + `.fieldValue = ` + mustptr(bean.FieldType, "&") + `arg
 	return u
 }
 `
@@ -188,19 +192,19 @@ func (u *` + structName + `) Scan(fieldname string, value any) {
 
 			s = `
 	case "` + bean.FieldName + `":
-		if t, err := gdao.AsTime(value); err == nil {
-		u.Set` + fieldName + `(t)
+		if t, err := base.AsTime(value); err == nil {
+			u.Set` + fieldName + `(t)
 		}`
 		} else if bean.FieldType.Kind() == reflect.Slice && bean.FieldType.Elem().Kind() == reflect.Uint8 {
 
 			s = `
 	case "` + bean.FieldName + `":
-		u.Set` + fieldName + `(gdao.AsBytes(value))`
+		u.Set` + fieldName + `(base.AsBytes(value))`
 		} else {
 
 			s = `
 	case "` + bean.FieldName + `":
-		u.Set` + fieldName + `(gdao.As` + ua(rtype) + `(value))`
+		u.Set` + fieldName + `(base.As` + ua(rtype) + `(value))`
 		}
 		r = r + s
 	}
@@ -214,7 +218,7 @@ func (u *` + structName + `) Scan(fieldname string, value any) {
 	for i, bean := range tableBean.Fieldlist {
 		columns = columns + "t." + ua(bean.FieldName)
 		fieldsString = fieldsString + "\"" + ua(bean.FieldName) + ":\"" + ",t.Get" + ua(bean.FieldName) + "()"
-		fields = fields + ua(bean.FieldName) + ":" + CheckReserveKey(bean.FieldName)
+		fields = fields + ua(bean.FieldName) + ":" + encodeFieldname(bean.FieldName)
 		if i < len(tableBean.Fieldlist)-1 {
 			columns = columns + ","
 			fieldsString = fieldsString + `, ",",`
@@ -224,36 +228,36 @@ func (u *` + structName + `) Scan(fieldname string, value any) {
 
 	selectfunc := `
 
-func (t *` + structName + `) Selects(columns ...gdao.Column) (_r []*` + structName + `, err error) {
+func (t *` + structName + `) Selects(columns ...base.Column[` + structName + `]) (_r []*` + structName + `, err error) {
 	if columns == nil {
-		columns = []gdao.Column{` + columns + `}
+		columns = []base.Column[` + structName + `]{` + columns + `}
 	}
-	databean, err := t.QueryBeans(columns...)
-	if err != nil || len(databean) == 0 {
+	databeans, err := t.ExecuteQueryBeans(columns...)
+	if err != nil || len(databeans) == 0 {
 		return nil, err
 	}
 	_r = make([]*` + structName + `, 0)
-	for _, beans := range databean {
+	for _, beans := range databeans {
 		__` + structName + ` := New` + structName + `()
-		for name, beans := range beans.FieldMapName {
-			__` + structName + `.Scan(name, beans.Value())
+		for name, bean := range beans.Map() {
+			__` + structName + `.Scan(name, bean.Value())
 		}
 		_r = append(_r, __` + structName + `)
 	}
 	return
 }
 
-func (t *` + structName + `) Select(columns ...gdao.Column) (_r *` + structName + `, err error) {
+func (t *` + structName + `) Select(columns ...base.Column[` + structName + `]) (_r *` + structName + `, err error) {
 	if columns == nil {
-		columns = []gdao.Column{` + columns + `}
+		columns = []base.Column[` + structName + `]{` + columns + `}
 	}
-	databean, err := t.QueryBean(columns...)
+	databean, err := t.ExecuteQueryBean(columns...)
 	if err != nil || databean == nil {
 		return nil, err
 	}
 	_r = New` + structName + `()
-	for name, beans := range databean.FieldMapName {
-		_r.Scan(name, beans.Value())
+	for name, bean := range databean.Map() {
+		_r.Scan(name, bean.Value())
 	}
 	return
 }
@@ -264,6 +268,18 @@ func (t *` + structName + `) Select(columns ...gdao.Column) (_r *` + structName 
 func (t *` + structName + `) New0() {
 	_t := New` + structName + `()
 	*t = *_t
+}
+`
+
+	copy := `
+func (t *` + structName + `) Copy(h *` + structName + `) *` + structName + `{`
+	r = r + copy
+	for _, bean := range tableBean.Fieldlist {
+		r = r + `
+	t.Set` + ua(bean.FieldName) + `(h.Get` + ua(bean.FieldName) + `())`
+	}
+	r = r + `
+	return t
 }
 `
 
@@ -279,9 +295,9 @@ func New` + structName + `(tablename ...string) (_r *` + structName + `) {
 `
 	for _, bean := range tableBean.Fieldlist {
 		structField := strings.ToLower(tableAlias) + "_" + ua(bean.FieldName)
-		varfield := CheckReserveKey(bean.FieldName)
+		varfield := encodeFieldname(bean.FieldName)
 		s := `
-	` + varfield + ` := &` + structField + `{fieldName: "` + bean.FieldName + `"}
+	` + varfield + ` := &` + structField + `[` + structName + `]{fieldName: "` + bean.FieldName + `"}
 	` + varfield + `.Field.FieldName = "` + bean.FieldName + `"
 `
 		newfunc = newfunc + s
@@ -298,5 +314,34 @@ func New` + structName + `(tablename ...string) (_r *` + structName + `) {
 }
 `
 	r = r + newfunc
+
+	serialstr := `
+func (t *` + structName + `) Encode() ([]byte, error) {
+	m := make(map[string]any, 0)`
+	r += serialstr
+	for _, bean := range tableBean.Fieldlist {
+		r += `
+	m["` + bean.FieldName + `"] = t.Get` + ua(bean.FieldName) + `()`
+	}
+
+	serialstr = `
+	return t.Table.Encode(m)
+}
+
+func (t *` + structName + `) Decode(bs []byte) (err error) {
+	var m map[string]any
+	if m, err = t.Table.Decode(bs); err == nil {
+		if !t.IsInit() {
+			t.New0()
+		}
+		for name, bean := range m {
+			t.Scan(name, bean)
+		}
+	}
+	return
+}
+
+`
+	r = r + serialstr
 	return r
 }
