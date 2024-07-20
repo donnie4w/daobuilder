@@ -3,14 +3,22 @@ package main
 import (
 	"database/sql"
 	"reflect"
-	"regexp"
 )
 
-func CheckReserveKey(k string) string {
-	if b, _ := regexp.MatchString("break|default|func|interface|select|case|defer|go|map|struct|chan|else|goto|package|switch|const|fallthrough|if|range|type|continue|for|import|return|var", k); b {
-		return k + "_0"
+func encodeFieldname(k string) string {
+	if iskey(k) {
+		return k + "_"
 	}
 	return k
+}
+
+func iskey(name string) bool {
+	switch name {
+	case "break", "default", "func", "interface", "select", "case", "defer", "go", "map", "struct", "chan", "else", "goto", "package", "switch", "const", "fallthrough", "if", "range", "type", "continue", "for", "import", "return", "var":
+		return true
+	default:
+		return false
+	}
 }
 
 var nullTimeType = reflect.TypeOf(sql.NullTime{})
