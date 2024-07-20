@@ -10,13 +10,11 @@ package util
 import (
 	"database/sql"
 	"fmt"
-	"github.com/donnie4w/gdao"
 	"reflect"
 	"time"
 )
 
 var DB *sql.DB
-var Gdao *gdao.Gdao
 var Config *ConfBean
 
 type TableBean struct {
@@ -46,7 +44,7 @@ type fieldBean struct {
 }
 
 func (f *fieldBean) String() string {
-	return fmt.Sprint(f.FieldName, ",", f.FieldIndex, ",", f.FieldType, ",", f.FieldTypeName)
+	return fmt.Sprint(f.FieldIndex+1, ".ColumnName:", f.FieldName, ",Type:", f.FieldTypeName)
 }
 
 func executeForTableInfo(sql string) (tb *TableBean, err error) {
