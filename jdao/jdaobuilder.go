@@ -137,7 +137,6 @@ import io.github.donnie4w.jdao.handle.JdaoException;
 import io.github.donnie4w.jdao.util.Serializer;
 import java.util.Map;
 import java.util.HashMap;
-import java.io.Serializable;
 ` + arrayPackage() + `
 ` + objectPackage() + `
 ` + timePackage + `
@@ -148,7 +147,7 @@ import java.io.Serializable;
  * @version jdao version ` + jdaoverion + `
  * @date ` + datetime + ` 
  */
-public class ` + structName + ` extends Table<` + structName + `> implements Serializable {
+public class ` + structName + ` extends Table<` + structName + `> {
 
     private static final long serialVersionUID = 6118074828633154000L;
 
