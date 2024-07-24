@@ -3,13 +3,10 @@ module github.com/donnie4w/daobuilder
 go 1.22.0
 
 require (
-	github.com/alexbrainman/odbc v0.0.0-20230814102256-1421b829acc9
 	github.com/denisenkom/go-mssqldb v0.12.3
-	github.com/donnie4w/gdao v0.0.0-20240522003110-c01bf7a82748
-	github.com/donnie4w/simplelog v0.0.6
+	github.com/donnie4w/gdao v0.0.0-20240723175049-748c5b345351
 	github.com/go-sql-driver/mysql v1.8.1
 	github.com/godror/godror v0.44.0
-	github.com/ibmdb/go_ibm_db v0.4.5
 	github.com/lib/pq v1.10.9
 	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/nakagami/firebirdsql v0.9.10
@@ -18,6 +15,7 @@ require (
 )
 
 require (
+	github.com/donnie4w/simplelog v0.0.6 // indirect
 	github.com/elastic/go-sysinfo v1.8.1 // indirect
 	github.com/elastic/go-windows v1.0.0 // indirect
 	github.com/joeshaw/multierror v0.0.0-20140124173710-69b34d4ec901 // indirect
@@ -28,7 +26,7 @@ require (
 	github.com/shopspring/decimal v1.2.0 // indirect
 	gitlab.com/nyarla/go-crypt v0.0.0-20160106005555-d9a5dc2b789b // indirect
 	golang.org/x/net v0.10.0 // indirect
-	golang.org/x/sys v0.15.0 // indirect
+	golang.org/x/sys v0.18.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	howett.net/plist v0.0.0-20181124034731-591f970eefbb // indirect
 	modernc.org/mathutil v1.4.2-0.20220822142738-b13e5b564332 // indirect
@@ -36,7 +34,7 @@ require (
 
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
-	github.com/donnie4w/gofer v0.0.0-20230929162647-ce06b81090fb
+	github.com/donnie4w/gofer v0.0.0-20240319022744-3a9079ccc237
 	github.com/donnie4w/gothrift v0.0.2 // indirect
 	github.com/go-logfmt/logfmt v0.6.0 // indirect
 	github.com/godror/knownpb v0.1.1 // indirect
