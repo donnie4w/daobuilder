@@ -36,13 +36,13 @@ func CreeteInitfile(filename string) {
 }
 
 var jsonData = `{
-  "dbtype": "mysql",
-  "dbhost": "localhost",
-  "dbport": 3306,
-  "dbname": "hstest",
-  "dbuser": "root",
-  "dbpwd": "123456",
-  "package": "dao",
+  "dbtype": "",
+  "dbhost": "",
+  "dbport": 0,
+  "dbname": "",
+  "dbuser": "",
+  "dbpwd": "",
+  "package": "",
   "table": [""],
   "table_alias": [{"table": "","alias": ""}],
   "table_except": [""]
