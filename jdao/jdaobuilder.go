@@ -149,9 +149,9 @@ import java.util.HashMap;
  */
 public class ` + structName + ` extends Table<` + structName + `> {
 
-    private static final long serialVersionUID = 6118074828633154000L;
+	private static final long serialVersionUID = 6118074828633154000L;
 
-    private final static String TABLENAME_ = "` + tableName + `";
+	private final static String TABLENAME_ = "` + tableName + `";
 `
 	fieldstr := ""
 	fieldToStr := ""
@@ -171,18 +171,19 @@ public class ` + structName + ` extends Table<` + structName + `> {
 	r += `
 	
 	public ` + ua(structName) + `() {
-        super(TABLENAME_, ` + ua(structName) + `.class);
-        super.initFields(` + fieldstr + `);
-    }
+		super(TABLENAME_, ` + ua(structName) + `.class);
+		super.initFields(` + fieldstr + `);
+	}
 
-    public ` + ua(structName) + `(String tableName) {
-        super(tableName, ` + ua(structName) + `.class);
-        super.initFields(` + fieldstr + `);
-    }
+	public ` + ua(structName) + `(String tableName) {
+		super(tableName, ` + ua(structName) + `.class);
+		super.initFields(` + fieldstr + `);
+	}
 
-    public void toJdao() {
-        super.init(` + structName + `.class);
-    }
+	@Override
+	public void toJdao() {
+		super.init(` + structName + `.class);
+	}
 `
 
 	for _, bean := range tableBean.Fieldlist {
@@ -196,24 +197,26 @@ public class ` + structName + ` extends Table<` + structName + `> {
 		rtype := goType(bean.FieldType, bean.FieldTypeName)
 		fieldname := encodeFieldname(bean.FieldName)
 		r += `
-    public ` + rtype + ` get` + ua(bean.FieldName) + `() {
-        return this.` + fieldname + `;
-    }
+	public ` + rtype + ` get` + ua(bean.FieldName) + `() {
+		return this.` + fieldname + `;
+	}
 
-    public void set` + ua(bean.FieldName) + `(` + rtype + ` ` + fieldname + `) {
-        fieldPut(` + strings.ToUpper(bean.FieldName) + `, ` + fieldname + `);
-        this.` + fieldname + ` = ` + fieldname + `;
-    }
+	public void set` + ua(bean.FieldName) + `(` + rtype + ` ` + fieldname + `) {
+		fieldPut(` + strings.ToUpper(bean.FieldName) + `, ` + fieldname + `);
+		this.` + fieldname + ` = ` + fieldname + `;
+	}
 `
 	}
 
 	r += `
-    public String toString() {
-        return ` + fieldToStr + `;
-    }
+	@Override
+	public String toString() {
+		return ` + fieldToStr + `;
+	}
 `
 
 	copy := `
+	@Override
 	public ` + structName + ` copy(` + structName + ` h) {`
 	r = r + copy
 	for _, bean := range tableBean.Fieldlist {
@@ -226,26 +229,27 @@ public class ` + structName + ` extends Table<` + structName + `> {
 `
 
 	r += `
-    public void scan(String fieldname, Object obj) throws JdaoException {
-        try {
-            switch (fieldname) {`
+	@Override
+	public void scan(String fieldname, Object obj) throws JdaoException {
+		try {
+			switch (fieldname) {`
 	for _, bean := range tableBean.Fieldlist {
 		rtype := goType(bean.FieldType, bean.FieldTypeName)
 		if bean.FieldType.Kind() == reflect.Slice && bean.FieldType.Elem().Kind() == reflect.Uint8 {
 			rtype = "bytes"
 		}
 		r += `
-                case "` + bean.FieldName + `":
-                    set` + ua(bean.FieldName) + `(Util.as` + ua(rtype) + `(obj));
-                    break;`
+				case "` + bean.FieldName + `":
+					set` + ua(bean.FieldName) + `(Util.as` + ua(rtype) + `(obj));
+ 					break;`
 
 	}
 
 	r += `
-            }
-        } catch (Exception e) {
-             throw new JdaoException(e);
-        }`
+			}
+		} catch (Exception e) {
+			throw new JdaoException(e);
+		}`
 
 	r += `
 	}
@@ -276,6 +280,7 @@ public class ` + structName + ` extends Table<` + structName + `> {
 	}
 
 	seriastr := `
+	@Override
 	public byte[] encode() {
 		Map<String, Object> map = new HashMap();`
 	r = r + seriastr
@@ -288,6 +293,7 @@ public class ` + structName + ` extends Table<` + structName + `> {
 		return Serializer.encode(map);
 	}
 
+	@Override
 	public ` + structName + ` decode(byte[] bs) throws JdaoException {
 		Map<String, Object> map = Serializer.decode(bs);
 		if (map != null) {
@@ -300,18 +306,18 @@ public class ` + structName + ` extends Table<` + structName + `> {
 `
 
 	r += `
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
         ` + structName + ` ` + structName2 + ` = (` + structName + `) o;
-        return ` + equalstr + `;
-    }
+		return ` + equalstr + `;
+	}
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(` + hashCodeStr + `);
-    }
+	@Override
+	public int hashCode() {
+		return Objects.hash(` + hashCodeStr + `);
+	}
 }`
 	return
 }
