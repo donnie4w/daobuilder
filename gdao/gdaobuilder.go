@@ -215,57 +215,60 @@ func (u *` + structName + `) Scan(fieldname string, value any) {
 	columns := ""
 	fields := ""
 	fieldsString := ""
+	columnsStr := ""
 	for i, bean := range tableBean.Fieldlist {
 		columns = columns + "t." + ua(bean.FieldName)
 		fieldsString = fieldsString + "\"" + ua(bean.FieldName) + ":\"" + ",t.Get" + ua(bean.FieldName) + "()"
 		fields = fields + ua(bean.FieldName) + ":" + encodeFieldname(bean.FieldName)
+		columnsStr = columnsStr + encodeFieldname(bean.FieldName)
 		if i < len(tableBean.Fieldlist)-1 {
 			columns = columns + ","
 			fieldsString = fieldsString + `, ",",`
 			fields = fields + ","
+			columnsStr = columnsStr + ","
 		}
 	}
 
-	selectfunc := `
-
-func (t *` + structName + `) Selects(columns ...base.Column[` + structName + `]) (_r []*` + structName + `, err error) {
-	if columns == nil {
-		columns = []base.Column[` + structName + `]{` + columns + `}
-	}
-	databeans, err := t.ExecuteQueryBeans(columns...)
-	if err != nil || len(databeans) == 0 {
-		return nil, err
-	}
-	_r = make([]*` + structName + `, 0)
-	for _, beans := range databeans {
-		__` + structName + ` := New` + structName + `()
-		for name, bean := range beans.Map() {
-			__` + structName + `.Scan(name, bean.Value())
-		}
-		_r = append(_r, __` + structName + `)
-	}
-	return
-}
-
-func (t *` + structName + `) Select(columns ...base.Column[` + structName + `]) (_r *` + structName + `, err error) {
-	if columns == nil {
-		columns = []base.Column[` + structName + `]{` + columns + `}
-	}
-	databean, err := t.ExecuteQueryBean(columns...)
-	if err != nil || databean == nil {
-		return nil, err
-	}
-	_r = New` + structName + `()
-	for name, bean := range databean.Map() {
-		_r.Scan(name, bean.Value())
-	}
-	return
-}
-`
-	r = r + selectfunc
+	//	selectfunc := `
+	//
+	//func (t *` + structName + `) Selects(columns ...base.Column[` + structName + `]) (_r []*` + structName + `, err error) {
+	//	if columns == nil {
+	//		columns = []base.Column[` + structName + `]{` + columns + `}
+	//	}
+	//	databeans, err := t.ExecuteQueryBeans(columns...)
+	//	if err != nil || len(databeans) == 0 {
+	//		return nil, err
+	//	}
+	//	_r = make([]*` + structName + `, 0)
+	//	for _, beans := range databeans {
+	//		__` + structName + ` := New` + structName + `()
+	//		for name, bean := range beans.Map() {
+	//			__` + structName + `.Scan(name, bean.Value())
+	//		}
+	//		_r = append(_r, __` + structName + `)
+	//	}
+	//	return
+	//}
+	//
+	//func (t *` + structName + `) Select(columns ...base.Column[` + structName + `]) (_r *` + structName + `, err error) {
+	//	if columns == nil {
+	//		columns = []base.Column[` + structName + `]{` + columns + `}
+	//	}
+	//	databean, err := t.ExecuteQueryBean(columns...)
+	//	if err != nil || databean == nil {
+	//		return nil, err
+	//	}
+	//	_r = New` + structName + `()
+	//	for name, bean := range databean.Map() {
+	//		_r.Scan(name, bean.Value())
+	//	}
+	//	return
+	//}
+	//`
+	//	r = r + selectfunc
 
 	r = r + `
-func (t *` + structName + `) New0() {
+func (t *` + structName + `) ToGdao() {
 	_t := New` + structName + `()
 	*t = *_t
 }
@@ -309,7 +312,7 @@ func New` + structName + `(tablename ...string) (_r *` + structName + `) {
 	if len(tablename) > 0 && tablename[0] != "" {
 		s = tablename[0]
 	}
-	_r.Init(s)
+	_r.Init(s, []base.Column[` + structName + `]{` + columnsStr + `})
 	return
 }
 `
@@ -332,7 +335,7 @@ func (t *` + structName + `) Decode(bs []byte) (err error) {
 	var m map[string]any
 	if m, err = t.Table.Decode(bs); err == nil {
 		if !t.IsInit() {
-			t.New0()
+			t.ToGdao()
 		}
 		for name, bean := range m {
 			t.Scan(name, bean)
