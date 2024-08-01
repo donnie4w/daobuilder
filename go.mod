@@ -4,7 +4,7 @@ go 1.22.0
 
 require (
 	github.com/denisenkom/go-mssqldb v0.12.3
-	github.com/donnie4w/gdao v0.0.0-20240723175049-748c5b345351
+	github.com/donnie4w/gdao v0.0.0-20240801090944-4491c62a179d
 	github.com/go-sql-driver/mysql v1.8.1
 	github.com/godror/godror v0.44.0
 	github.com/lib/pq v1.10.9
