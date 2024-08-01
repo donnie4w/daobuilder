@@ -12,12 +12,12 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"github.com/donnie4w/gdao"
 	"github.com/donnie4w/gdao/base"
 	"log"
 
 	//_ "github.com/alexbrainman/odbc"
 	_ "github.com/denisenkom/go-mssqldb"
-	"github.com/donnie4w/gdao"
 	goutil "github.com/donnie4w/gofer/util"
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/godror/godror"
