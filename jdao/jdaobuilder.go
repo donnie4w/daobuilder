@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/donnie4w/daobuilder/util"
+	. "github.com/donnie4w/gdao/gdaoBuilder"
 	"log"
 	"os"
 	"path/filepath"
@@ -62,12 +63,16 @@ func createlog(tableName, tableAlias string) string {
 }
 
 func createFile(tableName, tableAlias string, packageName string) string {
-	tableBean := util.TableInfo(tableName)
-	dbtype, dbname := util.Config.DbType, util.Config.DbName
-	return createDaoFile(dbtype, dbname, tableName, tableAlias, packageName, tableBean)
+	if tableBean, err := GetTableBean(tableName, util.DB); err == nil {
+		dbtype, dbname := util.Config.DbType, util.Config.DbName
+		return createDaoFile(dbtype, dbname, tableName, tableAlias, packageName, tableBean)
+	} else {
+		log.Println("[createFile] GetTableBean failed", err)
+	}
+	return ""
 }
 
-func createDaoFile(dbtype, dbname, tableName, tableAlias string, packageName string, tableBean *util.TableBean) (r string) {
+func createDaoFile(dbtype, dbname, tableName, tableAlias string, packageName string, tableBean *TableBean) (r string) {
 	datetime := time.Now().Format(time.DateTime)
 	ua := util.ToUpperFirstLetter
 	structName := ua(tableAlias)
