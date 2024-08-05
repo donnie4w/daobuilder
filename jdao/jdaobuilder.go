@@ -43,7 +43,7 @@ func fileBuilder() error {
 				if f, err := os.Create(fileName); err == nil {
 					defer f.Close()
 					f.WriteString(str)
-					log.Println("[successfully created dao file]", createlog(tableName, tableAlias))
+					log.Println("[successfully created dao file]", "[table:", tableName, "]["+fileName+"]")
 					ok = true
 				}
 			}
