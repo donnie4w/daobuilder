@@ -29,7 +29,7 @@ func fileBuilder() error {
 	log.Println("[tables]", ts)
 	for _, tableName := range ts {
 		tableAlias := util.Config.GetAlias(tableName)
-		gdaoBuilder.Build(tableName, tableAlias, util.Config.DbType, util.Config.DbName, util.Config.Package, util.DB)
+		gdaoBuilder.BuildWithAlias(tableName, tableAlias, util.Config.DbType, util.Config.DbName, util.Config.Package, util.DB)
 	}
 	return nil
 }
